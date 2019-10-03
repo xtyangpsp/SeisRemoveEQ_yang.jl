@@ -120,7 +120,13 @@ function map_removeEQ(dlid, InputDict::Dict)
 
                 if IsKurtosisRemoval
                     # compute kurtosis and detect
-                    bt_1 = @elapsed S1 = Get_kurtosis.get_kurtosis(S1, float(kurtosis_timewindow), float(kurtosis_tw_sparse))
+                    #added by Xiaotao Yang to check the data length.
+                    if length(S1.x) >=trunc(Int, float(kurtosis_timewindow) * S1.fs)
+                        bt_1 = @elapsed S1 = Get_kurtosis.get_kurtosis(S1, float(kurtosis_timewindow), float(kurtosis_tw_sparse))
+                    else
+                        bt_1 = 0.0
+                        S1.misc["kurtosis"]=0.0
+                    end
 
                     bt_2 = @elapsed S1 = Remove_eq.detect_eq_kurtosis(S1, tw=float(removal_shorttimewindow), kurtosis_threshold=float(kurtosis_threshold), overlap=float(overlap))
 

@@ -28,7 +28,7 @@ function detect_eq_kurtosis(data::SeisChannel; tw::Float64=60.0, kurtosis_thresh
     slide = twsize-overlapsize
 
     #kurtosis of timeseries
-    ku1 = data.misc["kurtosis"][:]
+    ku1 = data.misc["kurtosis"]#[:]
     #reset long window counter and triggers for current channel
     i = 0
 

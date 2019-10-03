@@ -46,16 +46,25 @@ function seisremoveEQ(InputDict::Dict)
 	mapidlist = []
 	for i = 1:length(InputDict["DLtimestamplist"])
 		y, jd = parse.(Int64, split(InputDict["DLtimestamplist"][i], ".")[1:2])
-		m, d = j2md(y,jd)
-		curdate=DateTime(y, m, d)
-		if !InputDict["IsStartendtime"]
-			# convert all time stamp
-			push!(mapidlist, i)
-		else
-			if curdate >= InputDict["starttime"] && curdate <= InputDict["endtime"]
+		try
+			m, d = j2md(y,jd)
+			curdate=DateTime(y, m, d)
+			if !InputDict["IsStartendtime"]
+				# convert all time stamp
 				push!(mapidlist, i)
 			else
-				continue
+				if curdate >= InputDict["starttime"] && curdate <= InputDict["endtime"]
+					push!(mapidlist, i)
+				else
+					continue
+				end
+			end
+		catch jmderror
+			println(jmderror)
+
+			if i==length(InputDict["DLtimestamplist"])
+				pop!(InputDict["DLtimestamplist"])
+				println("!!! Removed the final timestamp. This is a temporary fix for non-leap year with 366 days.!!!")
 			end
 		end
  	end

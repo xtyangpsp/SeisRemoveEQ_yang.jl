@@ -47,7 +47,6 @@ function convert_tmpfile(InputDict::Dict; salvage::Bool=false)
 
 	IsIsolateComponents = InputDict["IsIsolateComponents"]
 	isostationlist = []
-
     for path in paths
         #println(path)
 
@@ -55,31 +54,28 @@ function convert_tmpfile(InputDict::Dict; salvage::Bool=false)
 		tmpname = split(path, "/")[end]
 
 		ftmpname = split(tmpname, ".")
-		if occursin("-", ftmpname[3])
-			# format would be y, jd, T00:00:00, sta, loc, cha
-			y, d, tmpT, net, sta, loc, cha = split(tmpname, ".")
-			iso_stationinfo = (join([y, d, net, sta, loc], "-"), cha)
-
-		elseif !occursin("-", ftmpname[3]) && IsIsolateComponents == true
-			@warn "format of tmp file is not y, jd, time, sta, loc, cha. Turn off IsIsolateComponents."
-			IsIsolateComponents = false
-			iso_stationinfo = []
-		end
+		y, d,net, sta, loc, cha = split(tmpname, ".")
+		iso_stationinfo = (join([y, d, net, sta, loc], "-"), cha)
+		# if occursin("-", ftmpname[3])
+		# 	# # format would be y, jd, T00:00:00, sta, loc, cha
+		# 	y, d, tmpT, net, sta, loc, cha = split(tmpname, ".")
+		# 	iso_stationinfo = (join([y, d, net, sta, loc], "-"), cha)
+		# elseif !occursin("-", ftmpname[3]) && IsIsolateComponents == true
+		# 	@warn "format of tmp file is not y, jd, time, sta, loc, cha. Turn off IsIsolateComponents."
+		# 	IsIsolateComponents = false
+		# 	iso_stationinfo = []
+		# end
 
 		#println(iso_stationinfo)
 
         try
             S = SeisIO.rseis(path)[1]
-            #println(S)
-
             for ii = 1:S.n #loop at each seis channel
-
 				if IsIsolateComponents
 					# check channel isolation
 					conflictsta = filter(x -> x[1]==iso_stationinfo[1] && string(x[2][end][end])==string(iso_stationinfo[2][end]), isostationlist)
 				end
 
-				#println(conflictsta)
 				if !isempty(conflictsta)
 					# here this channel has conflicting channel such as same day, same components but different channel.
 					# if IsIsolateComponents == true, skip to avoid multiple stations for the purpose of cross-correlation.
@@ -98,7 +94,7 @@ function convert_tmpfile(InputDict::Dict; salvage::Bool=false)
 					# update isostationlist
 					push!(isostationlist, iso_stationinfo)
 				end
-
+				# println(S[ii])
                 # make station list
                 staid = S[ii].id
 
@@ -114,9 +110,9 @@ function convert_tmpfile(InputDict::Dict; salvage::Bool=false)
                     tj = string(s_str)[11:19]
 
                     djm2j = md2j(yj, mj, dj)
-                    groupname = string(yj)*"."*string(djm2j)*"."*tj #Year_Julianday_Starttime
+                    groupname = string(yj)*"."*string(djm2j)*"."*replace(tj,":"=>"-") #Year_Julianday_Starttime
                     varname = joinpath(groupname, staid)
-
+					# println(groupname)
                     if isempty(filter(x -> x==varname, varnamelist))
                         push!(varnamelist, varname)
                         file[varname] = S[ii]
@@ -130,7 +126,7 @@ function convert_tmpfile(InputDict::Dict; salvage::Bool=false)
 			rm(path)
 
         catch y
-            #println(y)
+            println(y)
         end
     end
 
