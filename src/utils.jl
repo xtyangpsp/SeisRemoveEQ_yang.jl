@@ -110,7 +110,8 @@ function convert_tmpfile(InputDict::Dict; salvage::Bool=false)
                     tj = string(s_str)[11:19]
 
                     djm2j = md2j(yj, mj, dj)
-                    groupname = string(yj)*"."*string(djm2j)*"."*replace(tj,":"=>"-") #Year_Julianday_Starttime
+                    # groupname = string(yj)*"."*string(djm2j)*"."*replace(tj,":"=>"-") #Year_Julianday_Starttime
+					groupname = string(yj)*"."*string(djm2j)
                     varname = joinpath(groupname, staid)
 					# println(groupname)
                     if isempty(filter(x -> x==varname, varnamelist))
